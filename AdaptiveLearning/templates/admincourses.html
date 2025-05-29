@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block title %}My Courses{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chalkboard-teacher me-2"></i>My Courses</h2>
+    </div>
+
+    <div class="row">
+        <!-- Course Assignment Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Assign Courses</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin_courses') }}">
+                        <div class="mb-3">
+                            <label class="form-label">Select courses you teach:</label>
+                            <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+                                {% for course in all_courses %}
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" 
+                                           type="checkbox" 
+                                           name="courses" 
+                                           value="{{ course.id }}"
+                                           {% if course.id in my_courses|map(attribute='id') %}checked{% endif %}>
+                                    {{ course.title }}
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-2"></i>Save Assignments
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student View Section -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Enrolled Students</h5>
+                        <div>
+                            <select class="form-select form-select-sm" 
+                                    onchange="window.location.href='{{ url_for('admin_courses') }}?course_id='+this.value">
+                                <option value="">Select a course...</option>
+                                {% for course in my_courses %}
+                                <option value="{{ course.id }}" 
+                                        {% if course.id == selected_course_id %}selected{% endif %}>
+                                    {{ course.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if selected_course_id %}
+                        {% if students %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Progress</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student, progress in students %}
+                                        <tr>
+                                            <td>{{ student.student_number }}</td>
+                                            <td>
+                                                {{ student.last_name }}, {{ student.first_name }}
+                                                <br>
+                                                <small class="text-muted">{{ student.email }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if progress == 100 %}bg-success
+                                                        {% elif progress >= 50 %}bg-primary
+                                                        {% else %}bg-warning{% endif %}" 
+                                                        style="width: {{ progress }}%">
+                                                        {{ progress }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('progress', student_id=student.id, course_id=selected_course_id) }}" 
+                                                class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+            
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mb-0">
+                            No students enrolled in this course yet.
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning mb-0">
+                        {% if my_courses %}
+                            Please select a course to view enrolled students.
+                        {% else %}
+                            You haven't been assigned to any courses yet. Select courses above.
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

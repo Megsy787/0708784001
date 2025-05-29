@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+        <!-- My Courses Section -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">My Courses</h2>
+                        <a href="/courses" class="btn btn-sm btn-light">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if my_courses %}
+                        <div class="row">
+                            {% for course in my_courses %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="mb-1">{{ course.title }}</h6>
+                                            <small class="text-muted">Instructor: {{ course.instructor }}</small>
+                                            
+                                            <div class="progress mt-3 mb-3" style="height: 8px;">
+                                                <div class="progress-bar" role="progressbar" style="width: {{ course.progress }}%;" 
+                                                    aria-valuenow="{{ course.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">{{ course.progress }}% Complete</small>
+                                                <a href="/mycourses" class="btn btn-sm btn-outline-primary">Continue</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            You are not enrolled in any courses yet. <a href="/courses" class="alert-link">Browse available courses</a> to get started.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upcoming Events Section -->
+            {% if upcoming_events %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0">Upcoming Events</h2>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for event in upcoming_events %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ event.title }}</h6>
+                                        <small class="text-muted">{{ event.course_title }}</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">
+                                        {{ event.event_date }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Available Courses Section -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h5 mb-0">Available Courses</h2>
+                </div>
+                <div class="card-body">
+                    {% if all_courses %}
+                        <div class="list-group">
+                            {% for course in all_courses %}
+                                <a href="/courses/{{ course.id }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ course.title }}</h6>
+                                            <small class="text-muted">Instructor: {{ course.instructor }}</small>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            No courses available at this time.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h2 class="h5 mb-0">Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/calendar" class="btn btn-outline-primary"><i class="fas fa-calendar-alt me-2"></i> View Calendar</a>
+                        <a href="/progress" class="btn btn-outline-success"><i class="fas fa-chart-line me-2"></i> View Progress</a>
+                        <a href="/grades" class="btn btn-outline-info"><i class="fas fa-graduation-cap me-2"></i> View Grades</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

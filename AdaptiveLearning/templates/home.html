@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+  <div class="hero">
+    <h1>Welcome to the Adaptive Learning Platform</h1>
+    <p>Personalized learning paths, interactive quizzes, and progress tracking made simple.</p>
+  </div>
+  
+  <div class="row">
+    <!-- Access Your Courses Card -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Access Your Courses</h5>
+          <p class="card-text">Quickly access your enrolled courses and start learning anytime, anywhere.</p>
+          <a href="/mycourses" class="btn btn-primary mt-2">My Courses</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Getting Started Card -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-compass fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Getting Started</h5>
+          <p class="card-text">New here? Follow our orientation guide to make the most of your learning experience.</p>
+          <a href="/courses" class="btn btn-primary mt-2">Browse Courses</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Personalized Learning Card -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Personalized Learning</h5>
+          <p class="card-text">Our platform adapts to your learning style and pace for optimal knowledge retention.</p>
+          <a href="/dashboard" class="btn btn-primary mt-2">Dashboard</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Interactive Quizzes Card -->
+    <div class="col-md-4 mt-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-question-circle fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Interactive Quizzes</h5>
+          <p class="card-text">Engage with interactive content that makes learning fun and effective.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Progress Tracking Card -->
+    <div class="col-md-4 mt-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Progress Tracking</h5>
+          <p class="card-text">Monitor your improvement with detailed analytics and progress reports.</p>
+          <a href="/progress" class="btn btn-primary mt-2">View Progress</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Calendar Card -->
+    <div class="col-md-4 mt-3">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Event Calendar</h5>
+          <p class="card-text">Stay organized with upcoming deadlines, events, and important dates.</p>
+          <a href="/calendar" class="btn btn-primary mt-2">View Calendar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

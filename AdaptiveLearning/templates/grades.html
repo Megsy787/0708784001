@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    My Grades
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="mb-4">My Grades</h2>
+                
+                {% if total_assignments > 0 %}
+                    <!-- Grades Summary -->
+                    <div class="row mb-4">
+                        <!-- Assignments Completed Card -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4 text-primary mb-2">{{ total_assignments }}</h1>
+                                    <h5 class="card-title">Assignments</h5>
+                                    <p class="text-muted">Submitted and graded</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Average Grade Card -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4 text-primary mb-2">{{ "%.1f"|format(average_grade) }}%</h1>
+                                    <h5 class="card-title">Average Grade</h5>
+                                    <p class="text-muted">Across all courses</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Grades Table -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Assignment Grades</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Course</th>
+                                            <th>Assignment</th>
+                                            <th>Due Date</th>
+                                            <th>Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for grade in grades %}
+                                            <tr>
+                                                <td>{{ grade.title }}</td>
+                                                <td>{{ grade.assignment }}</td>
+                                                <td>{{ grade.due_date }}</td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {% if grade.grade >= 90 %}bg-success
+                                                        {% elif grade.grade >= 70 %}bg-primary
+                                                        {% elif grade.grade >= 50 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}">
+                                                        {{ grade.grade }}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No Grades available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

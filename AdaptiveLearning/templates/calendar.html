@@ -1,0 +1,214 @@
+{% extends "layout.html" %}
+
+{% block title %}
+ Calendar
+{% endblock %}
+
+{% block main %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Event Calendar</h1>
+    <a href="/dashboard" class="btn btn-outline-primary">
+      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+  </div>
+  
+  <div id="calendar-container" class="card shadow-sm">
+    <div class="card-body">
+      <!-- Navigation buttons for month change -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <button id="prev-month" class="btn btn-outline-primary" onclick="changeMonth(-1)">
+          <i class="fas fa-chevron-left me-1"></i> Previous
+        </button>
+        <h3 id="calendar-title" class="mb-0 text-center"></h3>
+        <button id="next-month" class="btn btn-outline-primary" onclick="changeMonth(1)">
+          Next <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table id="calendar" class="table table-bordered">
+          <thead>
+            <tr>
+              <th class="text-center">Sun</th>
+              <th class="text-center">Mon</th>
+              <th class="text-center">Tue</th>
+              <th class="text-center">Wed</th>
+              <th class="text-center">Thu</th>
+              <th class="text-center">Fri</th>
+              <th class="text-center">Sat</th>
+            </tr>
+          </thead>
+          <tbody id="calendar-body" class="calendar-body">
+            <!-- JavaScript will fill in the calendar -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Directly use the events passed from Flask (via Jinja)
+    const events = {{ events | tojson | safe }};
+    let currentDate = new Date();  // Track the current month and year
+
+    // Function to generate the calendar for a given month and year
+    function generateCalendar(year, month) {
+      const tbody = document.getElementById("calendar-body");
+      tbody.innerHTML = "";  // Clear previous content
+
+      const date = new Date(year, month, 1);
+      const firstDay = date.getDay();  // Day of the week the month starts
+      const daysInMonth = new Date(year, month + 1, 0).getDate();  // Total days in the month
+      const today = new Date();
+      const isCurrentMonth = (year === today.getFullYear() && month === today.getMonth());
+
+      // Update the calendar title to show the current month and year
+      document.getElementById("calendar-title").textContent = 
+        `${date.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+
+      let dateCounter = 1;
+      // Create 6 rows (maximum needed for a month)
+      for (let i = 0; i < 6; i++) {
+        // Stop if we've gone past the last day of the month
+        if (dateCounter > daysInMonth) break;
+
+        const row = document.createElement("tr");
+        row.className = "calendar-week";
+
+        // Create 7 cells for each day of the week
+        for (let j = 0; j < 7; j++) {
+          const td = document.createElement("td");
+          td.className = "calendar-day";
+
+          // Add empty cells for days before the start of the month
+          if (i === 0 && j < firstDay) {
+            td.className = "calendar-day empty";
+            td.innerHTML = "&nbsp;";
+            row.appendChild(td);
+            continue;
+          }
+
+          // Stop if we've gone past the last day of the month
+          if (dateCounter > daysInMonth) {
+            td.className = "calendar-day empty";
+            td.innerHTML = "&nbsp;";
+            row.appendChild(td);
+            continue;
+          }
+
+          // Create cell for current day
+          const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${dateCounter.toString().padStart(2, '0')}`;
+          
+          // Create day number element
+          const dayNumber = document.createElement("div");
+          dayNumber.className = "day-number";
+          dayNumber.textContent = dateCounter;
+          td.appendChild(dayNumber);
+
+          td.dataset.date = dateStr;
+
+          // Highlight days with events
+          const dayEvents = events.filter(event => {
+            const eventDate = new Date(event.date);
+            const eventDateStr = `${eventDate.getFullYear()}-${(eventDate.getMonth() + 1).toString().padStart(2, '0')}-${eventDate.getDate().toString().padStart(2, '0')}`;
+            return eventDateStr === dateStr;
+          });
+          
+          if (dayEvents.length > 0) {
+            td.classList.add("event-day");
+            
+            const eventsContainer = document.createElement("div");
+            eventsContainer.className = "calendar-events";
+            
+            dayEvents.forEach(event => {
+              const eventElement = document.createElement("div");
+              eventElement.className = "calendar-event";
+              eventElement.innerHTML = `
+                <strong>${event.name}</strong>
+                <small class="d-block text-muted">${event.course}</small>
+              `;
+              eventsContainer.appendChild(eventElement);
+            });
+            
+            td.appendChild(eventsContainer);
+          }
+
+          // Mark today's date with a special style
+          if (isCurrentMonth && dateCounter === today.getDate()) {
+            td.classList.add("today");
+          }
+
+          row.appendChild(td);
+          dateCounter++;
+        }
+
+        tbody.appendChild(row);
+      }
+    }
+
+    // Function to change the month when an arrow button is clicked
+    function changeMonth(direction) {
+      currentDate.setMonth(currentDate.getMonth() + direction);  // Adjust month by +1 or -1
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    // Generate the calendar for the current month when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    });
+  </script>
+
+  <style>
+    .calendar-day {
+      height: 120px;
+      vertical-align: top;
+      position: relative;
+      padding: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .calendar-day:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .calendar-day.empty {
+      background-color: #f8f9fa;
+    }
+    
+    .calendar-day.today {
+      background-color: rgba(67, 97, 238, 0.1);
+      border: 2px solid var(--primary-color);
+    }
+    
+    .calendar-day.event-day {
+      background-color: rgba(76, 201, 240, 0.1);
+    }
+    
+    .day-number {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .calendar-events {
+      margin-top: 4px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    
+    .calendar-event {
+      font-size: 0.8em;
+      padding: 4px;
+      margin: 2px 0;
+      background-color: rgba(67, 97, 238, 0.1);
+      border-radius: 4px;
+      border-left: 3px solid var(--primary-color);
+    }
+    
+    .calendar-event strong {
+      display: block;
+    }
+    
+    .calendar-event small {
+      font-size: 0.7em;
+    }
+  </style>
+{% endblock %}

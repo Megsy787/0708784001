@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block main %}
+<div class="container profile-page">
+    <div class="row">
+        <!-- PROFILE CARD (Left Side) -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <!-- Profile Picture -->
+                    <div class="profile-picture mb-3">
+                        {% if user and user.profile_pic %}
+                            <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}" 
+                                class="rounded-circle" width="150" height="150" alt="Profile Picture">
+                        {% elif admin and admin.profile_pic %}
+                            <img src="{{ url_for('static', filename='uploads/profile_pics/' + admin.profile_pic) }}" 
+                                class="rounded-circle" width="150" height="150" alt="Profile Picture">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-primary"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- User Information -->
+                    <h3>{{ user.student_number if user else admin.admin_number }}</h3>
+                    <p class="text-muted">{{ user.email if user else admin.email }}</p>
+                    
+                    <hr>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROGRESS & QUIZZES (Right Side) -->
+        <div class="col-md-8">
+            {% if user %}
+            <!-- Progress Section (Only for Students) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5>Learning Progress</h5>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_courses %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Progress</th>
+                                        <th>Last Activity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in enrolled_courses %}
+                                        <tr>
+                                            <td>{{ course.title }}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar 
+                                                        {% if course.progress == 100 %}bg-success
+                                                        {% elif course.progress >= 50 %}bg-primary
+                                                        {% else %}bg-warning{% endif %}" 
+                                                        style="width: {{ course.progress }}%">
+                                                        {{ course.progress }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ course.last_activity.strftime('%Y-%m-%d') if course.last_activity else 'N/A' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            You're not enrolled in any courses yet.
+                            <a href="/courses" class="alert-link">Browse courses</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quiz Results Section (Only for Students) -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Recent Quiz Results</h5>
+                </div>
+                <div class="card-body">
+                    {% if quiz_results %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Score</th>
+                                    <th>Date Taken</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quiz in quiz_results %}
+                                    <tr>
+                                        <td>{{ quiz.quiz_name }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if quiz.score >= 80 %}bg-success
+                                                {% elif quiz.score >= 60 %}bg-primary
+                                                {% elif quiz.score >= 40 %}bg-warning
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ quiz.score }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ quiz.taken_at.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No quiz results available yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Admin Dashboard Section -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5>Admin Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        Welcome to your admin profile. You can manage courses, users, and system settings from here.
+                    </div>
+                    <!-- Add admin-specific content here -->
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/updateprofile" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Profile Picture</label>
+                        <input class="form-control" type="file" name="profile_pic" accept="image/*">
+                        {% if user and user.profile_pic %}
+                            <small>Current: {{ user.profile_pic }}</small>
+                        {% elif admin and admin.profile_pic %}
+                            <small>Current: {{ admin.profile_pic }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ 'Student Number' if user else 'Admin Number' }}</label>
+                        <input type="text" class="form-control" name="username" 
+                               value="{{ user.student_number if user else admin.admin_number }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" 
+                               value="{{ user.email if user else admin.email }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/changepassword" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-control" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-control" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" name="confirm_password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

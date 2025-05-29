@@ -1,0 +1,48 @@
+{% extends "layout.html"%}
+{% block title%}
+    Sign In
+{% endblock %}
+{% block main %}
+    <div class="auth-container">
+        <div class="text-center mb-4">
+            <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="text-muted">Sign in to continue your learning journey</p>
+        </div>
+        
+        <form action="/signin" method="post" class="auth-form">
+            <div class="form-group mb-3">
+                {% if request.args.get('role') == 'student' %}
+                    <label for="username" class="form-label">Student Number</label>
+                    <input autocomplete="off" autofocus class="form-control" id="username" name="username" 
+                        placeholder="Enter your student number" type="text" required>
+                {% else %}
+                    <label for="username" class="form-label">Admin Number</label>
+                    <input autocomplete="off" autofocus class="form-control" id="username" name="username" 
+                        placeholder="Enter your admin number" type="text" required>
+                {% endif %}    
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input autocomplete="off" class="form-control" id="password" name="password" 
+                    placeholder="Enter your password" type="password" required>
+                <div class="text-end mt-2">
+                    <a href="/forgot" class="text-muted small">Forgot password?</a>
+                </div>
+            </div>
+            
+            <div class="form-group form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                <label class="form-check-label" for="remember">Remember me</label>
+            </div>
+            
+            <!-- Hidden input to pass the role -->
+            <input type="hidden" name="role" value="{{ request.args.get('role') }}">
+            
+            <button class="btn btn-primary btn-block w-100 py-2 mb-3" type="submit">
+                <i class="fas fa-sign-in-alt me-2"></i> Sign In
+            </button>
+        </form>
+    </div>
+{% endblock %}
