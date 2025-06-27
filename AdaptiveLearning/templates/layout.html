@@ -43,7 +43,7 @@
                                     <i class="fas fa-user-circle me-1"></i>
                                     {% if session['user_id'] %}
                                         Student E-Learning Platform
-                                    {% else session['admin_id'] %}
+                                    {% elif session['admin_id'] %}
                                         Admin E-Learning Platform
                                     {% endif %}
                                 </a>
