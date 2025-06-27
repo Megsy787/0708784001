@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 #from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import signin_required
 from models import db, Admin, Course, Event, Assignment, UserCourse, CourseMaterial, MaterialAnswer, StudentSubmission, Progress, Student, QuizResult
-from sqlalchemy import exists, case, func, and_, or_
+from sqlalchemy import exists, case, func, and_, or_, literal
 from datetime import datetime
 
 
@@ -128,13 +128,13 @@ def forgot_password():
             student.password = new_password
             db.session.commit()
             flash("Password updated successfully", "success")
-            return redirect("/")
+            return redirect("/signin")
 
         if admin:
             admin.password = new_password
             db.session.commit()
             flash("Password updated successfully", "success")
-            return redirect("/")
+            return redirect("/signin")
 
         flash("User not found", "danger")
         return redirect("/forgot")
@@ -173,36 +173,70 @@ def dashboard():
 
     return render_template("dashboard.html", my_courses=my_courses, all_courses=all_courses, upcoming_events=upcoming_events)
 
+
 @app.route("/calendar")
 @signin_required
 def calendar():
+    # Get today's date and set the date range (today to 30 days from now)
     today = datetime.now()
     start_date = today
     end_date = today + timedelta(days=30)
 
-    events = (
-        db.session.query(Event)
-        .filter(Event.event_date >= start_date, Event.event_date <= end_date)
-        .order_by(Event.event_date.asc())
-        .all()
+    # Get assignments due within the next 30 days
+    assignments = db.session.query(
+        Assignment.name.label("title"),
+        Assignment.due_date.label("event_date"),
+        Assignment.course_id,
+        literal("assignment").label("type")
+    ).filter(
+        Assignment.due_date >= start_date,
+        Assignment.due_date <= end_date
     )
 
-    course_ids = [event.course_id for event in events]
-    course_map = {
-        course.id: course.title for course in
-        db.session.query(Course).filter(Course.id.in_(course_ids)).all()
-    }
+    # Get materials uploaded within the next 30 days
+    materials = db.session.query(
+        CourseMaterial.title.label("title"),
+        CourseMaterial.course_id,
+        literal("material").label("type")
+    ).filter()
 
+    # Combine assignments and materials, then sort them by date
+    assignments_list = assignments.all()
+    materials_list = materials.all()
+
+    events = assignments_list + materials_list
+    events.sort(key=lambda e: e.event_date)
+
+    # Assume you have access to current user's enrolled courses
+    course_ids = [course.course_id for course in materials] 
+    upcoming_events = []
+    if course_ids:
+        upcoming_events = (
+            db.session.query(Event.title, Event.event_date, Course.title.label('course_title'))
+            .join(Course, Event.course_id == Course.id)
+            .filter(Event.course_id.in_(course_ids), Event.event_date >= datetime.now())
+            .order_by(Event.event_date.asc())
+            .all()
+        )
+
+    # Get all course titles mapped by course ID
+    courses = db.session.query(Course).all()
+    course_titles = {course.id: course.title for course in courses}
+
+    # Prepare event data for the template
     event_data = [
         {
             "name": event.title,
             "date": event.event_date,
-            "course": course_map.get(event.course_id, "General")
+            "course": course_titles.get(event.course_id, "General"),
+            "type": event.type
         }
         for event in events
     ]
 
-    return render_template("calendar.html", events=event_data)
+    # Render the calendar with all events
+    return render_template("calendar.html", upcoming_events=upcoming_events, events=event_data)
+
 
 @app.route("/courses", methods=["GET", "POST"])
 @signin_required
@@ -257,8 +291,6 @@ def courses():
     ).order_by(Course.title).all()
 
     return render_template("courses.html", courses=courses)
-
-
 
 
 @app.route("/mycourses")
@@ -619,7 +651,6 @@ def content_management():
         flash('Admin login required', 'danger')
         return redirect(url_for('signin'))
 
-    # Handle form submissions
     if request.method == 'POST':
         # Course Material Upload
         if 'material_submit' in request.form:
@@ -697,7 +728,6 @@ def content_management():
                         courses=courses,
                         materials=materials,
                         assignments=assignments)
-
 
 if __name__ == "__main__":
     app.run(debug=True)

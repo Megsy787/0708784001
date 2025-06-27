@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Content management
+    Content Management
 {% endblock %}
 
 {% block main %}
@@ -32,7 +32,8 @@
                             <h5 class="mb-0">Upload New Course Material</h5>
                         </div>
                         <div class="card-body">
-                            <form action="/upload_material" method="post" enctype="multipart/form-data">
+                            <form method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="material_submit" value="1">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="materialCourse" class="form-label">Course</label>
@@ -72,6 +73,7 @@
                                         <tr>
                                             <th>Course</th>
                                             <th>Title</th>
+                                            <th>Content Preview</th>
                                             <th>Upload Date</th>
                                             <th>Actions</th>
                                         </tr>
@@ -79,20 +81,27 @@
                                     <tbody>
                                         {% for material in materials %}
                                         <tr>
-                                            <td>{{ material.course_id }}</td>
-                                            <td>{{ material.title }}</td>
-                                            <td>{{ material.content}}</td>
                                             <td>
-                                                <a href="/admin/view_material/{{ material.id }}" class="btn btn-sm btn-outline-primary">View</a>
-                                                <a href="/admin/edit_material/{{ material.id }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                                <form action="/admin/delete_material/{{ material.id }}" method="post" style="display: inline;">
+                                                {% for course in courses %}
+                                                    {% if course.id == material.course_id %}
+                                                        {{ course.title }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ material.title }}</td>
+                                            <td>{{ material.content|truncate(50) }}</td>
+                                            <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else 'N/A' }}</td>
+                                            <td>
+                                                <a href="{{ url_for('view_material', material_id=material.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                                <a href="{{ url_for('edit_material', material_id=material.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                                <form action="{{ url_for('delete_material', material_id=material.id) }}" method="post" style="display: inline;">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this material?')">Delete</button>
                                                 </form>
                                             </td>
                                         </tr>
                                         {% else %}
                                         <tr>
-                                            <td colspan="4" class="text-center">No course materials found</td>
+                                            <td colspan="5" class="text-center">No course materials found</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -109,7 +118,8 @@
                             <h5 class="mb-0">Create New Assignment</h5>
                         </div>
                         <div class="card-body">
-                            <form action="/admin/create_assignment" method="post">
+                            <form method="post">
+                                <input type="hidden" name="assignment_submit" value="1">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="assignmentCourse" class="form-label">Course</label>
@@ -163,14 +173,20 @@
                                     <tbody>
                                         {% for assignment in assignments %}
                                         <tr>
-                                            <td>{{ assignment.course_id }}</td>
+                                            <td>
+                                                {% for course in courses %}
+                                                    {% if course.id == assignment.course_id %}
+                                                        {{ course.title }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
                                             <td>{{ assignment.name }}</td>
-                                            <td>{{ assignment.due_date}}</td>
+                                            <td>{{ assignment.due_date.strftime('%Y-%m-%d') }}</td>
                                             <td>{{ assignment.grade }}</td>
                                             <td>
-                                                <a href="/admin/view_assignment/{{ assignment.id }}" class="btn btn-sm btn-outline-primary">View</a>
-                                                <a href="/admin/edit_assignment/{{ assignment.id }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                                <form action="/admin/delete_assignment/{{ assignment.id }}" method="post" style="display: inline;">
+                                                <a href="{{ url_for('view_assignment', assignment_id=assignment.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                                <a href="{{ url_for('edit_assignment', assignment_id=assignment.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                                <form action="{{ url_for('delete_assignment', assignment_id=assignment.id) }}" method="post" style="display: inline;">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this assignment?')">Delete</button>
                                                 </form>
                                             </td>
@@ -194,14 +210,15 @@
                             <h5 class="mb-0">Create New Quiz</h5>
                         </div>
                         <div class="card-body">
-                            <form action="/admin/create_quiz" method="post">
+                            <form method="post">
+                                <input type="hidden" name="quiz_submit" value="1">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="quizMaterial" class="form-label">Related Course Material</label>
                                         <select class="form-select" id="quizMaterial" name="material_id" required>
                                             <option value="" selected disabled>Select a material</option>
                                             {% for material in materials %}
-                                            <option value="{{ material.id }}">{{ material.title }} ({{ material.course.title }})</option>
+                                            <option value="{{ material.id }}">{{ material.title }} ({% for course in courses %}{% if course.id == material.course_id %}{{ course.title }}{% endif %}{% endfor %})</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -244,13 +261,19 @@
                                     <tbody>
                                         {% for quiz in quizzes %}
                                         <tr>
-                                            <td>{{ quiz.material.title }}</td>
-                                            <td>{{ quiz.title }}</td>
-                                            <td>{{ quiz.questions|length }}</td>
                                             <td>
-                                                <a href="/admin/view_quiz/{{ quiz.id }}" class="btn btn-sm btn-outline-primary">View</a>
-                                                <a href="/admin/edit_quiz/{{ quiz.id }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                                <form action="/admin/delete_quiz/{{ quiz.id }}" method="post" style="display: inline;">
+                                                {% for material in materials %}
+                                                    {% if material.id == quiz.material_id %}
+                                                        {{ material.title }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ quiz.title }}</td>
+                                            <td>{{ quiz.questions|length if quiz.questions else 0 }}</td>
+                                            <td>
+                                                <a href="{{ url_for('view_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                                <a href="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                                <form action="{{ url_for('delete_quiz', quiz_id=quiz.id) }}" method="post" style="display: inline;">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this quiz?')">Delete</button>
                                                 </form>
                                             </td>
@@ -360,4 +383,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-[file content end]

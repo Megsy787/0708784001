@@ -32,8 +32,8 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/signin?role=student">Student Login</a>
                             </li>
-                        {% endif %}
-                        {% if not session['admin_id'] %}
+                        <!-- {% endif %} -->
+                        {% elif not session['admin_id'] %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/signin?role=admin">Admin Login</a>
                             </li>
@@ -48,6 +48,7 @@
                                     {% endif %}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if session ['user_id'] or ['admin_id'] %}
                                     <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
@@ -125,7 +126,7 @@
         <!-- Footer -->
         <footer class="bg-light py-4 mt-auto">
             <div class="container text-center">
-                <p class="mb-2">&copy; 2023 Adaptive Learning Platform. All rights reserved.</p>
+                <p class="mb-2">&copy; 2025 Adaptive Learning Platform. All rights reserved.</p>
                 <div class="social-links">
                     <a href="#" class="text-dark me-3"><i class="fab fa-twitter"></i></a>
                     <a href="#" class="text-dark me-3"><i class="fab fa-facebook"></i></a>
