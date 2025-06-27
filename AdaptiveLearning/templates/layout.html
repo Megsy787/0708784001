@@ -33,7 +33,7 @@
                                 <a class="nav-link" href="/signin?role=student">Student Login</a>
                             </li>
                         <!-- {% endif %} -->
-                        {% elif not session['admin_id'] %}
+                        {% else not session['admin_id'] %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/signin?role=admin">Admin Login</a>
                             </li>
