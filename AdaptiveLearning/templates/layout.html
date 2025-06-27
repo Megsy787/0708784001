@@ -32,7 +32,7 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/signin?role=student">Student Login</a>
                             </li>
-                        <!-- {% endif %} -->
+                        {% endif %}
                         {% if not session['admin_id'] %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/signin?role=admin">Admin Login</a>
@@ -48,10 +48,13 @@
                                     {% endif %}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    {% if session ['user_id'] or ['admin_id'] %}
+                                    {% if session ['admin_id'] %}
                                     <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                    {% else session ['user_id'] %}
+                                    <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                    {% endif %}
                                 </ul>
                             </li>
                         {% endif %}
